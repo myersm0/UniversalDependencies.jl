@@ -1,6 +1,5 @@
 using Test
 using UniversalDependencies
-
 const UD = UniversalDependencies
 
 const sample_path = joinpath(@__DIR__, "sample.conllu")
@@ -75,7 +74,7 @@ end
 	s1 = tb[1]
 	@test sent_id(s1) == "weblog-1"
 	@test UD.text(s1) == "I don't even know what to say about this place."
-	@test length(s1) == 10
+	@test length(s1) == 12
 	@test length(multiwords(s1)) == 1
 	mw = multiwords(s1)[1]
 	@test mw.first == 2
@@ -100,7 +99,7 @@ end
 	tb = load(sample_path)
 	s1 = tb[1]
 	forms = [w.form for w in s1]
-	@test length(forms) == 10
+	@test length(forms) == 12
 	@test forms[1] == "I"
 	@test forms[end] == "."
 	@test count(w -> w.upos == "VERB", s1) == 2
@@ -165,11 +164,13 @@ end
 @testset "render smoke test" begin
 	tb = load(sample_path)
 	buf = IOBuffer()
-	render(buf, tb[1], CompactStyle())
+	render(CompactStyle(), buf, tb[1])
 	@test length(String(take!(buf))) > 0
-	render(buf, tb[1], TableStyle())
+	render(TableStyle(), buf, tb[1])
 	@test length(String(take!(buf))) > 0
-	render(buf, tb[1], AutoStyle())
+	render(AutoStyle(), buf, tb[1])
+	@test length(String(take!(buf))) > 0
+	render(buf, tb[1])
 	@test length(String(take!(buf))) > 0
 end
 

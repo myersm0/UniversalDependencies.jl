@@ -46,10 +46,12 @@ function chunk_words(words::AbstractVector{WordNode}, max_width::Int, gap::Int)
 end
 
 
+# --- render on raw word vectors (internal workhorse) ---
+
 function render(
+	::TableStyle,
 	io::IO,
-	words::AbstractVector{WordNode},
-	::TableStyle;
+	words::AbstractVector{WordNode};
 	highlights::AbstractVector{UnitRange{Int}} = UnitRange{Int}[],
 	margin_labels::Dict{Int, String} = Dict{Int, String}(),
 	kwargs...,
@@ -58,9 +60,9 @@ function render(
 end
 
 function render(
+	::CompactStyle,
 	io::IO,
-	words::AbstractVector{WordNode},
-	::CompactStyle;
+	words::AbstractVector{WordNode};
 	highlights::AbstractVector{UnitRange{Int}} = UnitRange{Int}[],
 	rows::Vector{Symbol} = default_compact_rows,
 	kwargs...,
@@ -80,9 +82,9 @@ function render(
 end
 
 function render(
+	::ArcStyle,
 	io::IO,
-	words::AbstractVector{WordNode},
-	::ArcStyle;
+	words::AbstractVector{WordNode};
 	highlights::AbstractVector{UnitRange{Int}} = UnitRange{Int}[],
 	kwargs...,
 )
@@ -101,9 +103,9 @@ function render(
 end
 
 function render(
+	::AutoStyle,
 	io::IO,
-	words::AbstractVector{WordNode},
-	::AutoStyle;
+	words::AbstractVector{WordNode};
 	highlights::AbstractVector{UnitRange{Int}} = UnitRange{Int}[],
 	margin_labels::Dict{Int, String} = Dict{Int, String}(),
 	rows::Vector{Symbol} = default_compact_rows,
@@ -125,27 +127,22 @@ function render(
 end
 
 
-function _render_sentence(io::IO, sentence::Sentence, style::DisplayStyle; kwargs...)
+# --- render on Sentence (prints comments, then delegates) ---
+
+function _render_sentence(style::DisplayStyle, io::IO, sentence::Sentence; kwargs...)
 	for comment in sentence.comments
 		printstyled(io, comment, '\n'; color = :light_black)
 	end
-	render(io, sentence.words, style; kwargs...)
+	render(style, io, sentence.words; kwargs...)
 end
 
-render(io::IO, s::Sentence, style::TableStyle; kwargs...) = _render_sentence(io, s, style; kwargs...)
-render(io::IO, s::Sentence, style::CompactStyle; kwargs...) = _render_sentence(io, s, style; kwargs...)
-render(io::IO, s::Sentence, style::ArcStyle; kwargs...) = _render_sentence(io, s, style; kwargs...)
-render(io::IO, s::Sentence, style::AutoStyle; kwargs...) = _render_sentence(io, s, style; kwargs...)
-render(io::IO, s::Sentence; kwargs...) = _render_sentence(io, s, AutoStyle(); kwargs...)
+render(s::TableStyle, io::IO, sent::Sentence; kw...) = _render_sentence(s, io, sent; kw...)
+render(s::CompactStyle, io::IO, sent::Sentence; kw...) = _render_sentence(s, io, sent; kw...)
+render(s::ArcStyle, io::IO, sent::Sentence; kw...) = _render_sentence(s, io, sent; kw...)
+render(s::AutoStyle, io::IO, sent::Sentence; kw...) = _render_sentence(s, io, sent; kw...)
 
-function render(
-	target,
-	style::DisplayStyle = AutoStyle();
-	kwargs...,
-)
-	render(stdout, target, style; kwargs...)
-end
 
+# --- render on sentence collections ---
 
 function estimate_height(sentence::Sentence, style::DisplayStyle, width::Int)
 	comment_lines = length(sentence.comments)
@@ -172,18 +169,10 @@ function estimate_height(sentence::Sentence, style::DisplayStyle, width::Int)
 	comment_lines + 2 * num_chunks + (num_chunks - 1)
 end
 
-function Base.show(io::IO, ::MIME"text/plain", sentence::Sentence)
-	render(io, sentence, AutoStyle())
-end
-
-function Base.show(io::IO, ::MIME"text/plain", tb::Treebank)
-	render(io, tb.sentences, AutoStyle())
-end
-
 function render(
+	style::DisplayStyle,
 	io::IO,
-	sentences::AbstractVector{Sentence},
-	style::DisplayStyle;
+	sentences::AbstractVector{Sentence};
 	kwargs...,
 )
 	n = length(sentences)
@@ -204,7 +193,7 @@ function render(
 			print(io, "[", i, "] ")
 			show(io, s)
 			println(io)
-			render(io, s.words, style; kwargs...)
+			render(style, io, s.words; kwargs...)
 		end
 		return
 	end
@@ -235,7 +224,7 @@ function render(
 		print(io, "[", i, "] ")
 		show(io, sentences[i])
 		println(io)
-		render(io, sentences[i].words, style; kwargs...)
+		render(style, io, sentences[i].words; kwargs...)
 	end
 	elided = n - head_count - tail_count
 	if elided > 0
@@ -248,6 +237,35 @@ function render(
 		print(io, "[", i, "] ")
 		show(io, sentences[i])
 		println(io)
-		render(io, sentences[i].words, style; kwargs...)
+		render(style, io, sentences[i].words; kwargs...)
 	end
+end
+
+
+# --- convenience: style-first without io, defaults to stdout ---
+
+render(style::DisplayStyle, target; kwargs...) = render(style, stdout, target; kwargs...)
+
+
+# --- convenience: no style specified, defaults to TableStyle ---
+
+render(io::IO, target; kwargs...) = render(TableStyle(), io, target; kwargs...)
+render(target; kwargs...) = render(TableStyle(), stdout, target; kwargs...)
+
+
+# --- show methods ---
+
+function Base.show(io::IO, ::MIME"text/plain", sentence::Sentence)
+	render(TableStyle(), io, sentence)
+end
+
+function Base.show(io::IO, tb::Treebank)
+	word_count = sum(length(s) for s in tb; init = 0)
+	print(io, "Treebank: ", length(tb), " sentences, ", word_count, " words")
+end
+
+function Base.show(io::IO, ::MIME"text/plain", tb::Treebank)
+	show(io, tb)
+	println(io)
+	render(TableStyle(), io, tb.sentences)
 end
