@@ -1,6 +1,5 @@
 using Test
 using UniversalDependencies
-
 const UD = UniversalDependencies
 
 const sample_path = joinpath(@__DIR__, "sample.conllu")
@@ -208,6 +207,45 @@ end
 	@test length(String(take!(buf))) > 0
 	render(buf, tb[1])
 	@test length(String(take!(buf))) > 0
+end
+
+@testset "enhanced deprel with colon in relation name" begin
+	e = parse(UD.EnhancedDeps, "3:nmod:in|5:obl:in_front_of")
+	@test length(e) == 2
+	@test e.deps[1].head == UD.NodeRef(3)
+	@test e.deps[1].deprel == "nmod:in"
+	@test e.deps[2].head == UD.NodeRef(5)
+	@test e.deps[2].deprel == "obl:in_front_of"
+	@test sprint(show, e) == "3:nmod:in|5:obl:in_front_of"
+end
+
+@testset "empty node round-trip" begin
+	conllu = """
+# sent_id = empty-test
+# text = I like coffee.
+1\tI\tI\tPRON\tPRP\tCase=Nom\t2\tnsubj\t2:nsubj\t_
+2\tlike\tlike\tVERB\tVBP\t_\t0\troot\t0:root\t_
+2.1\tlike\tlike\tVERB\tVBP\t_\t_\t_\t0:root\t_
+3\tcoffee\tcoffee\tNOUN\tNN\tNumber=Sing\t2\tobj\t2:obj|2.1:obj\tSpaceAfter=No
+4\t.\t.\tPUNCT\t.\t_\t2\tpunct\t2:punct\t_
+
+"""
+	tb = UD.load(IOBuffer(conllu))
+	@test length(tb) == 1
+	s = tb[1]
+	@test length(s) == 4
+	@test length(UD.empties(s)) == 1
+	en = UD.empties(s)[1]
+	@test en.id == UD.NodeRef(2, 1)
+	@test en.form == "like"
+	@test en.upos == "VERB"
+	w3 = s[3]
+	@test w3.deps.deps[2].head == UD.NodeRef(2, 1)
+	@test w3.deps.deps[2].deprel == "obj"
+	buf = IOBuffer()
+	UD.save(buf, tb)
+	result = String(take!(buf))
+	@test result == conllu
 end
 
 @testset "Tables.jl integration" begin
