@@ -47,7 +47,8 @@ function Base.show(io::IO, f::Features)
 	if isempty(f)
 		print(io, "_")
 	else
-		join(io, ("$k=$v" for (k, v) in f.pairs), '|')
+		sorted = sort(f.pairs; by = first)
+		join(io, ("$k=$v" for (k, v) in sorted), '|')
 	end
 end
 
@@ -62,8 +63,42 @@ function Base.parse(::Type{Features}, raw::AbstractString)::Features
 end
 
 
+@kwdef struct DepHead
+	major::Int
+	minor::Int = 0
+end
+
+DepHead(major::Int) = DepHead(major, 0)
+
+is_empty_node(id::DepHead) = id.minor > 0
+
+function Base.show(io::IO, id::DepHead)
+	if id.minor == 0
+		print(io, id.major)
+	else
+		print(io, id.major, '.', id.minor)
+	end
+end
+
+function Base.parse(::Type{DepHead}, raw::AbstractString)::DepHead
+	if contains(raw, '.')
+		left, right = split(raw, '.'; limit = 2)
+		DepHead(parse(Int, left), parse(Int, right))
+	else
+		DepHead(parse(Int, raw))
+	end
+end
+
+function Base.:(==)(a::DepHead, b::DepHead)
+	a.major == b.major && a.minor == b.minor
+end
+
+function Base.hash(id::DepHead, h::UInt)
+	hash(id.minor, hash(id.major, h))
+end
+
 @kwdef struct EnhancedDep
-	head::Int
+	head::DepHead
 	deprel::String
 end
 
@@ -92,7 +127,7 @@ function Base.parse(::Type{EnhancedDeps}, raw::AbstractString)::EnhancedDeps
 	deps = EnhancedDep[]
 	for item in split(raw, '|')
 		head_str, deprel = split(item, ':'; limit = 2)
-		push!(deps, EnhancedDep(parse(Int, head_str), String(deprel)))
+		push!(deps, EnhancedDep(parse(DepHead, head_str), String(deprel)))
 	end
 	EnhancedDeps(deps)
 end
@@ -160,3 +195,4 @@ Base.getindex(tb::Treebank, r::UnitRange) = Treebank(tb.sentences[r])
 Base.setindex!(tb::Treebank, s::Sentence, i::Int) = (tb.sentences[i] = s)
 Base.push!(tb::Treebank, s::Sentence) = (push!(tb.sentences, s); tb)
 Base.IndexStyle(::Type{Treebank}) = IndexLinear()
+Base.filter(f, tb::Treebank) = Treebank(filter(f, tb.sentences))

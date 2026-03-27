@@ -1,7 +1,7 @@
 module UniversalDependencies
 
 include("types.jl")
-export Features, EnhancedDep, EnhancedDeps
+export DepHead, is_empty_node, Features, EnhancedDep, EnhancedDeps
 export AbstractNode, WordNode, MultiwordNode, EmptyNode
 export Sentence, Treebank
 
@@ -25,5 +25,7 @@ export arc_diagram
 include("styles.jl")
 export DisplayStyle, TableStyle, CompactStyle, ArcStyle, AutoStyle
 export render
+
+include("tables.jl")
 
 end

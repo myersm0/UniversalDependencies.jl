@@ -28,18 +28,38 @@ const sample_path = joinpath(@__DIR__, "sample.conllu")
 	@test isempty(empty_f)
 	@test sprint(show, empty_f) == "_"
 	@test sprint(show, parse(Features, "A=1|B=2")) == "A=1|B=2"
+	@test sprint(show, parse(Features, "B=2|A=1")) == "A=1|B=2"
+end
+
+@testset "DepHead" begin
+	n1 = parse(DepHead, "5")
+	@test n1.major == 5
+	@test n1.minor == 0
+	@test !is_empty_node(n1)
+	@test sprint(show, n1) == "5"
+	n2 = parse(DepHead, "5.1")
+	@test n2.major == 5
+	@test n2.minor == 1
+	@test is_empty_node(n2)
+	@test sprint(show, n2) == "5.1"
+	@test n1 != n2
+	@test parse(DepHead, "5") == parse(DepHead, "5")
 end
 
 @testset "EnhancedDeps" begin
 	e = parse(EnhancedDeps, "5:nsubj|8:obj")
 	@test length(e) == 2
-	@test e.deps[1].head == 5
+	@test e.deps[1].head == DepHead(5)
 	@test e.deps[1].deprel == "nsubj"
-	@test e.deps[2].head == 8
+	@test e.deps[2].head == DepHead(8)
 	empty_e = parse(EnhancedDeps, "_")
 	@test isempty(empty_e)
 	@test sprint(show, empty_e) == "_"
 	@test sprint(show, e) == "5:nsubj|8:obj"
+	e2 = parse(EnhancedDeps, "5.1:nsubj|3:obj")
+	@test e2.deps[1].head == DepHead(5, 1)
+	@test is_empty_node(e2.deps[1].head)
+	@test sprint(show, e2) == "5.1:nsubj|3:obj"
 end
 
 @testset "WordNode construction" begin
@@ -113,6 +133,9 @@ end
 	@test length(sub) == 2
 	ids = [sent_id(s) for s in tb]
 	@test ids == ["weblog-1", "weblog-2", "weblog-3", "weblog-4"]
+	filtered = filter(s -> length(s) > 3, tb)
+	@test filtered isa Treebank
+	@test length(filtered) == 3
 end
 
 @testset "tree traversal" begin
@@ -172,6 +195,28 @@ end
 	@test length(String(take!(buf))) > 0
 	render(buf, tb[1])
 	@test length(String(take!(buf))) > 0
+end
+
+@testset "Tables.jl integration" begin
+	using Tables
+	tb = load(sample_path)
+	@test Tables.istable(typeof(tb))
+	@test Tables.rowaccess(typeof(tb))
+	rows = collect(Tables.rows(tb))
+	expected = sum(length(s) for s in tb)
+	@test length(rows) == expected
+	@test length(Tables.rows(tb)) == expected
+	r1 = rows[1]
+	@test r1.sentence_index == 1
+	@test r1.id == 1
+	@test r1.form == "I"
+	@test r1.upos == "PRON"
+	@test r1.head == 5
+	@test r1.deprel == "nsubj"
+	s = Tables.schema(tb)
+	@test :sentence_index in s.names
+	@test :form in s.names
+	@test length(s.names) == 8
 end
 
 end
