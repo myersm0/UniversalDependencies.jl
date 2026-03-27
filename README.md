@@ -14,10 +14,10 @@ Pkg.add("UniversalDependencies")
 ```
 
 ## Quick start
+A constant `UD` is exported as a shorthand for `UniversalDependencies`, so that package-specific functions can be brief and general without risking collision in the global namespace:
 
 ```julia
 using UniversalDependencies
-const UD = UniversalDependencies
 
 treebank = UD.load("en_ewt-ud-train.conllu")
 sentence = treebank[1]

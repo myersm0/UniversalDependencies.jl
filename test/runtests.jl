@@ -1,6 +1,5 @@
 using Test
 using UniversalDependencies
-const UD = UniversalDependencies
 
 const sample_path = joinpath(@__DIR__, "sample.conllu")
 
