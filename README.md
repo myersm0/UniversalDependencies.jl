@@ -27,10 +27,10 @@ UD.text(sentence)        # the original text of the sentence
 length(sentence)         # 12 (word count)
 
 node = sentence[5]
-node.form                # "know"
-node.upos                # "VERB"
-node.head                # 0 (root)
-node.feats["VerbForm"]   # "Inf"
+UD.form(node)                # "know"
+UD.upos(node)                # "VERB"
+UD.head(node)                # 0 (root)
+UD.feats(node)["VerbForm"]   # "Inf"
 ```
 
 ## API overview
@@ -101,7 +101,7 @@ get(n.feats, "Mood", "N/A")    # safe access
 haskey(n.feats, "Tense")       # true/false
 keys(n.feats)                  # ["Number", "Person", ...]
 
-n.feats["Mood"] = "Sub"        # mutable
+UD.feats(n)["Mood"] = "Sub"    # mutable
 delete!(n.feats, "Gender")
 
 f = parse(UD.Features, "Number=Sing|Tense=Past")
@@ -116,8 +116,8 @@ Parsed from the DEPS column. Heads use `NodeRef`, so references to empty nodes w
 ```julia
 e = parse(UD.EnhancedDeps, "5:nsubj|5.1:obj")
 for dep in e
-    dep.head      # NodeRef — could be a word or empty node
-    dep.deprel    # String
+    UD.head(dep)    # NodeRef — could be a word or empty node
+    UD.deprel(dep)  # String
 end
 ```
 
@@ -128,9 +128,9 @@ end
 ```julia
 s[3]                                  # third token
 length(s)                             # word count
-[n.form for n in s]                   # all forms
-count(n -> n.upos == "VERB", s)       # verb count
-filter(n -> n.head == 0, s)           # root tokens
+[UD.form(n) for n in s]               # all forms
+count(n -> UD.upos(n) == "VERB", s)   # verb count
+filter(n -> UD.head(n) == 0, s)       # root tokens
 ```
 
 Other node types and metadata:

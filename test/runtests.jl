@@ -112,19 +112,22 @@ end
 	mw = UD.multitokens(s1)[1]
 	@test mw.first == 2
 	@test mw.last == 3
-	@test mw.form == "don't"
+	@test UD.form(mw) == "don't"
 	@test UD.id(mw) === nothing
 	w1 = s1[1]
 	@test UD.id(w1) == 1
-	@test w1.form == "I"
-	@test w1.upos == "PRON"
-	@test w1.head == 5
-	@test w1.deprel == "nsubj"
-	@test w1.feats["Case"] == "Nom"
+	@test UD.form(w1) == "I"
+	@test UD.lemma(w1) == "I"
+	@test UD.upos(w1) == "PRON"
+	@test UD.xpos(w1) == "PRP"
+	@test UD.head(w1) == 5
+	@test UD.deprel(w1) == "nsubj"
+	@test UD.feats(w1)["Case"] == "Nom"
+	@test UD.misc(w1) isa UD.Features
 	w5 = s1[5]
-	@test w5.form == "know"
-	@test w5.head == 0
-	@test w5.deprel == "root"
+	@test UD.form(w5) == "know"
+	@test UD.head(w5) == 0
+	@test UD.deprel(w5) == "root"
 	s3 = tb[3]
 	@test UD.sent_id(s3) == "weblog-3"
 	@test length(s3) == 3

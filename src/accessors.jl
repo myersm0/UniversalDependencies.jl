@@ -17,6 +17,21 @@ function id(::MWTNode)
 	nothing
 end
 
+form(node::AbstractNode) = node.form
+lemma(node::Node) = node.lemma
+lemma(node::EmptyNode) = node.lemma
+upos(node::Node) = node.upos
+upos(node::EmptyNode) = node.upos
+xpos(node::Node) = node.xpos
+xpos(node::EmptyNode) = node.xpos
+feats(node::Node) = node.feats
+feats(node::EmptyNode) = node.feats
+head(node::Node) = node.head
+deprel(node::Node) = node.deprel
+deps(node::Node) = node.deps
+deps(node::EmptyNode) = node.deps
+misc(node::AbstractNode) = node.misc
+
 function text(sentence::Sentence)
 	for comment in sentence.comments
 		if startswith(comment, "# text")
