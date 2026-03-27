@@ -36,7 +36,7 @@ function parse_empty(fields::Vector{<:AbstractString}, major::Int, minor::Int)::
 end
 
 function parse_sentence(lines::AbstractVector{<:AbstractString})::Sentence
-	tokens = Node[]
+	words = Node[]
 	multitokens = MWTNode[]
 	empties = EmptyNode[]
 	comments = String[]
@@ -54,11 +54,11 @@ function parse_sentence(lines::AbstractVector{<:AbstractString})::Sentence
 				left, right = split(id_str, '.')
 				push!(empties, parse_empty(fields, parse(Int, left), parse(Int, right)))
 			else
-				push!(tokens, parse_word(fields))
+				push!(words, parse_word(fields))
 			end
 		end
 	end
-	Sentence(tokens = tokens, multitokens = multitokens, empties = empties, comments = comments)
+	Sentence(words = words, multitokens = multitokens, empties = empties, comments = comments)
 end
 
 

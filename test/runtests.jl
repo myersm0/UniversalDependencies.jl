@@ -169,13 +169,13 @@ end
 	@test isnothing(UD.head_of(s2, r))
 end
 
-@testset "flat token iterator" begin
+@testset "flat word iterator" begin
 	tb = UD.load(sample_path)
-	all_tokens = collect(UD.tokens(tb))
+	all_words = collect(UD.words(tb))
 	expected = sum(length(s) for s in tb)
-	@test length(all_tokens) == expected
-	@test all_tokens[1].form == "I"
-	@test all_tokens[end].form == "."
+	@test length(all_words) == expected
+	@test all_words[1].form == "I"
+	@test all_words[end].form == "."
 end
 
 @testset "round-trip" begin
@@ -188,7 +188,7 @@ end
 end
 
 @testset "write_sentence head=0 as zero" begin
-	s = UD.Sentence(tokens = [UD.Node(id = 1, form = "Hi", head = 0, deprel = "root")])
+	s = UD.Sentence(words = [UD.Node(id = 1, form = "Hi", head = 0, deprel = "root")])
 	buf = IOBuffer()
 	UD.write_sentence(buf, s)
 	line = split(String(take!(buf)), '\n')[1]

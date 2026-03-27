@@ -4,9 +4,7 @@
 
 A Julia representation of the [Universal Dependencies](https://universaldependencies.org/) data model for annotated linguistic data: typed nodes, structured features, and tree traversal.
 
-Featuring a toolkit for reading, editing, and analyzing UD treebanks.
-
-CoNLL-U is the supported serialization format.
+Featuring a toolkit for reading, editing, and analyzing UD treebanks. CoNLL-U is the supported serialization format.
 
 ## Installation
 
@@ -26,7 +24,7 @@ sentence = treebank[1]
 
 UD.sent_id(sentence)     # "weblog-01"
 UD.text(sentence)        # the original text of the sentence
-length(sentence)         # 12 (token count)
+length(sentence)         # 12 (word count)
 
 node = sentence[5]
 node.form                # "know"
@@ -125,11 +123,11 @@ end
 
 ### Sentence
 
-`UD.Sentence <: AbstractVector{UD.Node}` — iteration, indexing, `filter`, `map`, `count` all operate on the token layer:
+`UD.Sentence <: AbstractVector{UD.Node}` — iteration, indexing, `filter`, `map`, `count` all operate on the word layer:
 
 ```julia
 s[3]                                  # third token
-length(s)                             # token count
+length(s)                             # word count
 [n.form for n in s]                   # all forms
 count(n -> n.upos == "VERB", s)       # verb count
 filter(n -> n.head == 0, s)           # root tokens
@@ -157,17 +155,17 @@ filter(s -> length(s) > 20, treebank)         # long sentences (returns Treebank
 [UD.sent_id(s) for s in treebank]             # all sentence IDs
 ```
 
-Flat token iteration across sentence boundaries:
+Flat word iteration across sentence boundaries:
 
 ```julia
-for n in UD.tokens(treebank)
+for n in UD.words(treebank)
     # every Node in the corpus
 end
 ```
 
 ### Tables.jl integration
 
-`Treebank` implements the Tables.jl interface, producing a flat token-level table:
+`Treebank` implements the Tables.jl interface, producing a flat word-level table:
 
 ```julia
 using DataFrames
@@ -227,6 +225,10 @@ Styles support highlights for marking matched tokens:
 render(ArcStyle(), s; highlights = [3:5])
 render(TableStyle(), s; margin_labels = Dict(3 => "a", 5 => "b"))
 ```
+
+## Terminology note
+
+This package follows the UD spec's distinction between "words" (syntactic units in the dependency tree, represented by `UD.Node`) and "tokens" (orthographic units, including multiword tokens). `UD.words` iterates the word layer; multiword tokens are accessed separately via `UD.multitokens`.
 
 ## License
 

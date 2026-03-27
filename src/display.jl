@@ -117,11 +117,11 @@ function compact(words::AbstractVector{Node}; kwargs...)
 end
 
 function compact(io::IO, sentence::Sentence; kwargs...)
-	compact(io, sentence.tokens; kwargs...)
+	compact(io, sentence.words; kwargs...)
 end
 
 function compact(sentence::Sentence; kwargs...)
-	compact(stdout, sentence.tokens; kwargs...)
+	compact(stdout, sentence.words; kwargs...)
 end
 
 
@@ -144,7 +144,7 @@ end
 
 function Base.show(io::IO, sentence::Sentence)
 	id = sent_id(sentence)
-	word_count = length(sentence.tokens)
+	word_count = length(sentence.words)
 	label = isnothing(id) ? "Sentence" : "Sentence($(repr(id)))"
 	print(io, label, ": ", word_count, " words")
 end

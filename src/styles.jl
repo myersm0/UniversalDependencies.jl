@@ -133,7 +133,7 @@ function _render_sentence(style::DisplayStyle, io::IO, sentence::Sentence; kwarg
 	for comment in sentence.comments
 		printstyled(io, comment, '\n'; color = :light_black)
 	end
-	render(style, io, sentence.tokens; kwargs...)
+	render(style, io, sentence.words; kwargs...)
 end
 
 render(s::TableStyle, io::IO, sent::Sentence; kw...) = _render_sentence(s, io, sent; kw...)
@@ -150,7 +150,7 @@ function estimate_height(sentence::Sentence, style::DisplayStyle, width::Int)
 	if style isa TableStyle
 		return comment_lines + word_count + length(sentence.multitokens) + length(sentence.empties)
 	end
-	line_width = words_line_width(sentence.tokens, style isa ArcStyle ? arc_gap : compact_gap)
+	line_width = words_line_width(sentence.words, style isa ArcStyle ? arc_gap : compact_gap)
 	num_chunks = max(1, ceil(Int, line_width / max(width, 1)))
 	if style isa CompactStyle
 		return comment_lines + 2 * num_chunks + (num_chunks - 1)
@@ -159,12 +159,12 @@ function estimate_height(sentence::Sentence, style::DisplayStyle, width::Int)
 		depth = min(word_count, 8)
 		return comment_lines + (depth + 2) * num_chunks + (num_chunks - 1)
 	end
-	arc_width = words_line_width(sentence.tokens, arc_gap)
+	arc_width = words_line_width(sentence.words, arc_gap)
 	if arc_width <= width
 		depth = min(word_count, 8)
 		return comment_lines + depth + 2
 	end
-	compact_width = words_line_width(sentence.tokens, compact_gap)
+	compact_width = words_line_width(sentence.words, compact_gap)
 	num_chunks = max(1, ceil(Int, compact_width / max(width, 1)))
 	comment_lines + 2 * num_chunks + (num_chunks - 1)
 end
@@ -193,7 +193,7 @@ function render(
 			print(io, "[", i, "] ")
 			show(io, s)
 			println(io)
-			render(style, io, s.tokens; kwargs...)
+			render(style, io, s.words; kwargs...)
 		end
 		return
 	end
@@ -224,7 +224,7 @@ function render(
 		print(io, "[", i, "] ")
 		show(io, sentences[i])
 		println(io)
-		render(style, io, sentences[i].tokens; kwargs...)
+		render(style, io, sentences[i].words; kwargs...)
 	end
 	elided = n - head_count - tail_count
 	if elided > 0
@@ -237,7 +237,7 @@ function render(
 		print(io, "[", i, "] ")
 		show(io, sentences[i])
 		println(io)
-		render(style, io, sentences[i].tokens; kwargs...)
+		render(style, io, sentences[i].words; kwargs...)
 	end
 end
 

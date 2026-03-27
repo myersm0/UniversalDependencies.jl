@@ -42,7 +42,7 @@ function write_sentence(io::IO, sentence::Sentence)
 	end
 	mw_idx = 1
 	em_idx = 1
-	for word in sentence.tokens
+	for word in sentence.words
 		while mw_idx <= length(sentence.multitokens) && sentence.multitokens[mw_idx].first == word.id.major
 			write_multiword(io, sentence.multitokens[mw_idx])
 			mw_idx += 1

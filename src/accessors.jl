@@ -22,14 +22,14 @@ multitokens(sentence::Sentence) = sentence.multitokens
 empties(sentence::Sentence) = sentence.empties
 
 function root(sentence::Sentence)::Node
-	for word in sentence.tokens
+	for word in sentence.words
 		word.head == 0 && return word
 	end
 	error("no root found in sentence")
 end
 
 function children(sentence::Sentence, id::NodeRef)::Vector{Node}
-	[w for w in sentence.tokens if w.head == id]
+	[w for w in sentence.words if w.head == id]
 end
 
 children(sentence::Sentence, id::Int) = children(sentence, NodeRef(id))
@@ -39,7 +39,7 @@ function subtree(sentence::Sentence, id::NodeRef)::Vector{Node}
 	stack = [id]
 	while !isempty(stack)
 		current = pop!(stack)
-		for word in sentence.tokens
+		for word in sentence.words
 			if word.head == current
 				push!(result, word)
 				push!(stack, word.id)
@@ -53,21 +53,21 @@ subtree(sentence::Sentence, id::Int) = subtree(sentence, NodeRef(id))
 
 function head_of(sentence::Sentence, word::Node)::Union{Node, Nothing}
 	word.head == 0 && return nothing
-	for w in sentence.tokens
+	for w in sentence.words
 		w.id == word.head && return w
 	end
 	nothing
 end
 
 
-struct TokenIterator
+struct WordIterator
 	treebank::Treebank
 end
 
-Base.IteratorSize(::Type{TokenIterator}) = Base.SizeUnknown()
-Base.eltype(::Type{TokenIterator}) = Node
+Base.IteratorSize(::Type{WordIterator}) = Base.SizeUnknown()
+Base.eltype(::Type{WordIterator}) = Node
 
-function Base.iterate(iter::TokenIterator, state = (1, 1))
+function Base.iterate(iter::WordIterator, state = (1, 1))
 	sent_idx, word_idx = state
 	while sent_idx <= length(iter.treebank)
 		sentence = iter.treebank[sent_idx]
@@ -80,4 +80,4 @@ function Base.iterate(iter::TokenIterator, state = (1, 1))
 	nothing
 end
 
-tokens(treebank::Treebank) = TokenIterator(treebank)
+words(treebank::Treebank) = WordIterator(treebank)

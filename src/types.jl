@@ -198,16 +198,16 @@ end
 
 
 @kwdef mutable struct Sentence <: AbstractVector{Node}
-	tokens::Vector{Node} = Node[]
+	words::Vector{Node} = Node[]
 	multitokens::Vector{MWTNode} = MWTNode[]
 	empties::Vector{EmptyNode} = EmptyNode[]
 	comments::Vector{String} = String[]
 end
 
-Base.size(s::Sentence) = size(s.tokens)
-Base.getindex(s::Sentence, i::Int) = s.tokens[i]
-Base.getindex(s::Sentence, r) = s.tokens[r]
-Base.setindex!(s::Sentence, w::Node, i::Int) = (s.tokens[i] = w)
+Base.size(s::Sentence) = size(s.words)
+Base.getindex(s::Sentence, i::Int) = s.words[i]
+Base.getindex(s::Sentence, r) = s.words[r]
+Base.setindex!(s::Sentence, w::Node, i::Int) = (s.words[i] = w)
 Base.IndexStyle(::Type{Sentence}) = IndexLinear()
 
 
