@@ -34,7 +34,7 @@ noun_count = count(w -> UD.upos(w) == "NOUN", UD.words(tb))
 
 # display
 render(ArcStyle(), tb[3])
-# sent_id = weblog-3
+# # sent_id = weblog-3
 # # text = Highly recommended!
 #              root
 #               ╭──punct───╮
@@ -46,4 +46,21 @@ render(CompactStyle(), tb[2])
 # The   food  was   not   very  good  but   the   service  was   excellent  .
 # DET   NOUN  AUX   PART  ADV   ADJ   CCONJ DET   NOUN     AUX   ADJ        PUNCT
 
+# highlight specific word positions (ANSI color in terminal)
+render(ArcStyle(), tb[1]; highlights = [5:5, 8:8])
+
+# margin labels for annotation review
+render(TableStyle(), tb[1]; margin_labels = Dict(5 => "✓", 8 => "?"))
+
+# streaming: process and render sentence by sentence without loading the full corpus
+open("large_treebank.conllu") do io
+    for sentence in UD.eachsentence(io)
+        # find sentences where a noun is the root
+        r = UD.root(sentence)
+        if UD.upos(r) == "NOUN"
+            render(ArcStyle(), sentence)
+            println()
+        end
+    end
+end
 
