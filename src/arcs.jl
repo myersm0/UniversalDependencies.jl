@@ -1,6 +1,6 @@
 function arc_diagram(
 	io::IO,
-	words::AbstractVector{WordNode};
+	words::AbstractVector{Node};
 	highlights::AbstractVector{UnitRange{Int}} = UnitRange{Int}[],
 )
 	isempty(words) && return
@@ -163,14 +163,14 @@ function arc_diagram(
 	end
 end
 
-function arc_diagram(words::AbstractVector{WordNode}; kwargs...)
+function arc_diagram(words::AbstractVector{Node}; kwargs...)
 	arc_diagram(stdout, words; kwargs...)
 end
 
 function arc_diagram(io::IO, sentence::Sentence; kwargs...)
-	arc_diagram(io, sentence.words; kwargs...)
+	arc_diagram(io, sentence.tokens; kwargs...)
 end
 
 function arc_diagram(sentence::Sentence; kwargs...)
-	arc_diagram(stdout, sentence.words; kwargs...)
+	arc_diagram(stdout, sentence.tokens; kwargs...)
 end

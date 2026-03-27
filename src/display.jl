@@ -1,4 +1,4 @@
-function word_fields(word::WordNode)::Vector{String}
+function word_fields(word::Node)::Vector{String}
 	[
 		string(word.id),
 		word.form,
@@ -13,7 +13,7 @@ function word_fields(word::WordNode)::Vector{String}
 	]
 end
 
-function column_widths(words::AbstractVector{WordNode})
+function column_widths(words::AbstractVector{Node})
 	widths = zeros(Int, 10)
 	for word in words
 		for (i, field) in enumerate(word_fields(word))
@@ -25,7 +25,7 @@ end
 
 function format_nodes(
 	io::IO,
-	words::AbstractVector{WordNode};
+	words::AbstractVector{Node};
 	highlights::AbstractVector{UnitRange{Int}} = UnitRange{Int}[],
 	margin_labels::Dict{Int, String} = Dict{Int, String}(),
 )
@@ -62,14 +62,14 @@ function format_nodes(
 	end
 end
 
-function format_nodes(words::AbstractVector{WordNode}; kwargs...)
+function format_nodes(words::AbstractVector{Node}; kwargs...)
 	format_nodes(stdout, words; kwargs...)
 end
 
 
 function compact(
 	io::IO,
-	words::AbstractVector{WordNode};
+	words::AbstractVector{Node};
 	highlights::AbstractVector{UnitRange{Int}} = UnitRange{Int}[],
 	rows::Vector{Symbol} = [:form, :upos],
 )
@@ -112,24 +112,24 @@ function compact(
 	end
 end
 
-function compact(words::AbstractVector{WordNode}; kwargs...)
+function compact(words::AbstractVector{Node}; kwargs...)
 	compact(stdout, words; kwargs...)
 end
 
 function compact(io::IO, sentence::Sentence; kwargs...)
-	compact(io, sentence.words; kwargs...)
+	compact(io, sentence.tokens; kwargs...)
 end
 
 function compact(sentence::Sentence; kwargs...)
-	compact(stdout, sentence.words; kwargs...)
+	compact(stdout, sentence.tokens; kwargs...)
 end
 
 
-function Base.show(io::IO, word::WordNode)
+function Base.show(io::IO, word::Node)
 	print(io, word.id, '\t', word.form, '\t', word.lemma, '\t', word.upos)
 end
 
-function Base.show(io::IO, ::MIME"text/plain", word::WordNode)
+function Base.show(io::IO, ::MIME"text/plain", word::Node)
 	names = ["id", "form", "lemma", "upos", "xpos", "feats", "head", "deprel", "deps", "misc"]
 	fields = word_fields(word)
 	width = maximum(length, names)
@@ -144,12 +144,12 @@ end
 
 function Base.show(io::IO, sentence::Sentence)
 	id = sent_id(sentence)
-	word_count = length(sentence.words)
+	word_count = length(sentence.tokens)
 	label = isnothing(id) ? "Sentence" : "Sentence($(repr(id)))"
 	print(io, label, ": ", word_count, " words")
 end
 
-function Base.show(io::IO, mw::MultiwordNode)
+function Base.show(io::IO, mw::MWTNode)
 	print(io, mw.first, '-', mw.last, '\t', mw.form)
 end
 

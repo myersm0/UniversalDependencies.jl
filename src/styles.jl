@@ -21,12 +21,12 @@ function terminal_width(io)
 	80
 end
 
-function words_line_width(words::AbstractVector{WordNode}, gap::Int)
+function words_line_width(words::AbstractVector{Node}, gap::Int)
 	isempty(words) && return 0
 	sum(max(textwidth(w.form), textwidth(w.upos)) for w in words) + gap * (length(words) - 1)
 end
 
-function chunk_words(words::AbstractVector{WordNode}, max_width::Int, gap::Int)
+function chunk_words(words::AbstractVector{Node}, max_width::Int, gap::Int)
 	chunks = UnitRange{Int}[]
 	start = 1
 	current_width = 0
@@ -51,7 +51,7 @@ end
 function render(
 	::TableStyle,
 	io::IO,
-	words::AbstractVector{WordNode};
+	words::AbstractVector{Node};
 	highlights::AbstractVector{UnitRange{Int}} = UnitRange{Int}[],
 	margin_labels::Dict{Int, String} = Dict{Int, String}(),
 	kwargs...,
@@ -62,7 +62,7 @@ end
 function render(
 	::CompactStyle,
 	io::IO,
-	words::AbstractVector{WordNode};
+	words::AbstractVector{Node};
 	highlights::AbstractVector{UnitRange{Int}} = UnitRange{Int}[],
 	rows::Vector{Symbol} = default_compact_rows,
 	kwargs...,
@@ -84,7 +84,7 @@ end
 function render(
 	::ArcStyle,
 	io::IO,
-	words::AbstractVector{WordNode};
+	words::AbstractVector{Node};
 	highlights::AbstractVector{UnitRange{Int}} = UnitRange{Int}[],
 	kwargs...,
 )
@@ -105,7 +105,7 @@ end
 function render(
 	::AutoStyle,
 	io::IO,
-	words::AbstractVector{WordNode};
+	words::AbstractVector{Node};
 	highlights::AbstractVector{UnitRange{Int}} = UnitRange{Int}[],
 	margin_labels::Dict{Int, String} = Dict{Int, String}(),
 	rows::Vector{Symbol} = default_compact_rows,
@@ -133,7 +133,7 @@ function _render_sentence(style::DisplayStyle, io::IO, sentence::Sentence; kwarg
 	for comment in sentence.comments
 		printstyled(io, comment, '\n'; color = :light_black)
 	end
-	render(style, io, sentence.words; kwargs...)
+	render(style, io, sentence.tokens; kwargs...)
 end
 
 render(s::TableStyle, io::IO, sent::Sentence; kw...) = _render_sentence(s, io, sent; kw...)
@@ -148,9 +148,9 @@ function estimate_height(sentence::Sentence, style::DisplayStyle, width::Int)
 	comment_lines = length(sentence.comments)
 	word_count = length(sentence)
 	if style isa TableStyle
-		return comment_lines + word_count + length(sentence.multiwords) + length(sentence.empties)
+		return comment_lines + word_count + length(sentence.multitokens) + length(sentence.empties)
 	end
-	line_width = words_line_width(sentence.words, style isa ArcStyle ? arc_gap : compact_gap)
+	line_width = words_line_width(sentence.tokens, style isa ArcStyle ? arc_gap : compact_gap)
 	num_chunks = max(1, ceil(Int, line_width / max(width, 1)))
 	if style isa CompactStyle
 		return comment_lines + 2 * num_chunks + (num_chunks - 1)
@@ -159,12 +159,12 @@ function estimate_height(sentence::Sentence, style::DisplayStyle, width::Int)
 		depth = min(word_count, 8)
 		return comment_lines + (depth + 2) * num_chunks + (num_chunks - 1)
 	end
-	arc_width = words_line_width(sentence.words, arc_gap)
+	arc_width = words_line_width(sentence.tokens, arc_gap)
 	if arc_width <= width
 		depth = min(word_count, 8)
 		return comment_lines + depth + 2
 	end
-	compact_width = words_line_width(sentence.words, compact_gap)
+	compact_width = words_line_width(sentence.tokens, compact_gap)
 	num_chunks = max(1, ceil(Int, compact_width / max(width, 1)))
 	comment_lines + 2 * num_chunks + (num_chunks - 1)
 end
@@ -193,7 +193,7 @@ function render(
 			print(io, "[", i, "] ")
 			show(io, s)
 			println(io)
-			render(style, io, s.words; kwargs...)
+			render(style, io, s.tokens; kwargs...)
 		end
 		return
 	end
@@ -224,7 +224,7 @@ function render(
 		print(io, "[", i, "] ")
 		show(io, sentences[i])
 		println(io)
-		render(style, io, sentences[i].words; kwargs...)
+		render(style, io, sentences[i].tokens; kwargs...)
 	end
 	elided = n - head_count - tail_count
 	if elided > 0
@@ -237,7 +237,7 @@ function render(
 		print(io, "[", i, "] ")
 		show(io, sentences[i])
 		println(io)
-		render(style, io, sentences[i].words; kwargs...)
+		render(style, io, sentences[i].tokens; kwargs...)
 	end
 end
 

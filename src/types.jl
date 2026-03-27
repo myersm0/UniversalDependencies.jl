@@ -143,7 +143,7 @@ end
 
 abstract type AbstractNode end
 
-mutable struct WordNode <: AbstractNode
+mutable struct Node <: AbstractNode
 	id::NodeRef
 	form::String
 	lemma::String
@@ -156,7 +156,7 @@ mutable struct WordNode <: AbstractNode
 	misc::Features
 end
 
-function WordNode(;
+function Node(;
 	id::Union{Int, NodeRef},
 	form::String,
 	lemma::String = "_",
@@ -168,7 +168,7 @@ function WordNode(;
 	deps::EnhancedDeps = EnhancedDeps(),
 	misc::Features = Features(),
 )
-	WordNode(
+	Node(
 		id isa Int ? NodeRef(id) : id,
 		form, lemma, upos, xpos, feats,
 		head isa Int ? NodeRef(head) : head,
@@ -176,7 +176,7 @@ function WordNode(;
 	)
 end
 
-@kwdef mutable struct MultiwordNode <: AbstractNode
+@kwdef mutable struct MWTNode <: AbstractNode
 	first::Int
 	last::Int
 	form::String
@@ -195,17 +195,17 @@ end
 end
 
 
-@kwdef mutable struct Sentence <: AbstractVector{WordNode}
-	words::Vector{WordNode} = WordNode[]
-	multiwords::Vector{MultiwordNode} = MultiwordNode[]
+@kwdef mutable struct Sentence <: AbstractVector{Node}
+	tokens::Vector{Node} = Node[]
+	multitokens::Vector{MWTNode} = MWTNode[]
 	empties::Vector{EmptyNode} = EmptyNode[]
 	comments::Vector{String} = String[]
 end
 
-Base.size(s::Sentence) = size(s.words)
-Base.getindex(s::Sentence, i::Int) = s.words[i]
-Base.getindex(s::Sentence, r) = s.words[r]
-Base.setindex!(s::Sentence, w::WordNode, i::Int) = (s.words[i] = w)
+Base.size(s::Sentence) = size(s.tokens)
+Base.getindex(s::Sentence, i::Int) = s.tokens[i]
+Base.getindex(s::Sentence, r) = s.tokens[r]
+Base.setindex!(s::Sentence, w::Node, i::Int) = (s.tokens[i] = w)
 Base.IndexStyle(::Type{Sentence}) = IndexLinear()
 
 

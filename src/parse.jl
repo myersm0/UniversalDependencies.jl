@@ -1,5 +1,5 @@
-function parse_word(fields::Vector{<:AbstractString})::WordNode
-	WordNode(
+function parse_word(fields::Vector{<:AbstractString})::Node
+	Node(
 		id = NodeRef(parse(Int, fields[1])),
 		form = String(fields[2]),
 		lemma = String(fields[3]),
@@ -13,8 +13,8 @@ function parse_word(fields::Vector{<:AbstractString})::WordNode
 	)
 end
 
-function parse_multiword(fields::Vector{<:AbstractString}, first::Int, last::Int)::MultiwordNode
-	MultiwordNode(
+function parse_multiword(fields::Vector{<:AbstractString}, first::Int, last::Int)::MWTNode
+	MWTNode(
 		first = first,
 		last = last,
 		form = String(fields[2]),
@@ -36,8 +36,8 @@ function parse_empty(fields::Vector{<:AbstractString}, major::Int, minor::Int)::
 end
 
 function parse_sentence(lines::AbstractVector{<:AbstractString})::Sentence
-	words = WordNode[]
-	multiwords = MultiwordNode[]
+	tokens = Node[]
+	multitokens = MWTNode[]
 	empties = EmptyNode[]
 	comments = String[]
 	for line in lines
@@ -49,16 +49,16 @@ function parse_sentence(lines::AbstractVector{<:AbstractString})::Sentence
 			id_str = fields[1]
 			if contains(id_str, '-')
 				left, right = split(id_str, '-')
-				push!(multiwords, parse_multiword(fields, parse(Int, left), parse(Int, right)))
+				push!(multitokens, parse_multiword(fields, parse(Int, left), parse(Int, right)))
 			elseif contains(id_str, '.')
 				left, right = split(id_str, '.')
 				push!(empties, parse_empty(fields, parse(Int, left), parse(Int, right)))
 			else
-				push!(words, parse_word(fields))
+				push!(tokens, parse_word(fields))
 			end
 		end
 	end
-	Sentence(words = words, multiwords = multiwords, empties = empties, comments = comments)
+	Sentence(tokens = tokens, multitokens = multitokens, empties = empties, comments = comments)
 end
 
 

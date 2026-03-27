@@ -1,4 +1,4 @@
-function write_word(io::IO, word::WordNode)
+function write_word(io::IO, word::Node)
 	print(io, word.id)
 	print(io, '\t', word.form)
 	print(io, '\t', word.lemma)
@@ -12,7 +12,7 @@ function write_word(io::IO, word::WordNode)
 	println(io)
 end
 
-function write_multiword(io::IO, mw::MultiwordNode)
+function write_multiword(io::IO, mw::MWTNode)
 	print(io, mw.first, '-', mw.last)
 	print(io, '\t', mw.form)
 	for _ in 1:7
@@ -42,9 +42,9 @@ function write_sentence(io::IO, sentence::Sentence)
 	end
 	mw_idx = 1
 	em_idx = 1
-	for word in sentence.words
-		while mw_idx <= length(sentence.multiwords) && sentence.multiwords[mw_idx].first == word.id.major
-			write_multiword(io, sentence.multiwords[mw_idx])
+	for word in sentence.tokens
+		while mw_idx <= length(sentence.multitokens) && sentence.multitokens[mw_idx].first == word.id.major
+			write_multiword(io, sentence.multitokens[mw_idx])
 			mw_idx += 1
 		end
 		write_word(io, word)

@@ -18,28 +18,28 @@ function text(sentence::Sentence)
 	nothing
 end
 
-multiwords(sentence::Sentence) = sentence.multiwords
+multitokens(sentence::Sentence) = sentence.multitokens
 empties(sentence::Sentence) = sentence.empties
 
-function root(sentence::Sentence)::WordNode
-	for word in sentence.words
+function root(sentence::Sentence)::Node
+	for word in sentence.tokens
 		word.head == 0 && return word
 	end
 	error("no root found in sentence")
 end
 
-function children(sentence::Sentence, id::NodeRef)::Vector{WordNode}
-	[w for w in sentence.words if w.head == id]
+function children(sentence::Sentence, id::NodeRef)::Vector{Node}
+	[w for w in sentence.tokens if w.head == id]
 end
 
 children(sentence::Sentence, id::Int) = children(sentence, NodeRef(id))
 
-function subtree(sentence::Sentence, id::NodeRef)::Vector{WordNode}
-	result = WordNode[]
+function subtree(sentence::Sentence, id::NodeRef)::Vector{Node}
+	result = Node[]
 	stack = [id]
 	while !isempty(stack)
 		current = pop!(stack)
-		for word in sentence.words
+		for word in sentence.tokens
 			if word.head == current
 				push!(result, word)
 				push!(stack, word.id)
@@ -51,23 +51,23 @@ end
 
 subtree(sentence::Sentence, id::Int) = subtree(sentence, NodeRef(id))
 
-function head_of(sentence::Sentence, word::WordNode)::Union{WordNode, Nothing}
+function head_of(sentence::Sentence, word::Node)::Union{Node, Nothing}
 	word.head == 0 && return nothing
-	for w in sentence.words
+	for w in sentence.tokens
 		w.id == word.head && return w
 	end
 	nothing
 end
 
 
-struct WordIterator
+struct TokenIterator
 	treebank::Treebank
 end
 
-Base.IteratorSize(::Type{WordIterator}) = Base.SizeUnknown()
-Base.eltype(::Type{WordIterator}) = WordNode
+Base.IteratorSize(::Type{TokenIterator}) = Base.SizeUnknown()
+Base.eltype(::Type{TokenIterator}) = Node
 
-function Base.iterate(iter::WordIterator, state = (1, 1))
+function Base.iterate(iter::TokenIterator, state = (1, 1))
 	sent_idx, word_idx = state
 	while sent_idx <= length(iter.treebank)
 		sentence = iter.treebank[sent_idx]
@@ -80,4 +80,4 @@ function Base.iterate(iter::WordIterator, state = (1, 1))
 	nothing
 end
 
-words(treebank::Treebank) = WordIterator(treebank)
+tokens(treebank::Treebank) = TokenIterator(treebank)
