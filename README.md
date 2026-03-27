@@ -230,6 +230,10 @@ render(TableStyle(), s; margin_labels = Dict(3 => "a", 5 => "b"))
 
 This package follows the UD spec's distinction between "words" (syntactic units in the dependency tree, represented by `UD.Node`) and "tokens" (orthographic units, including multiword tokens). `UD.words` iterates the word layer; multiword tokens are accessed separately via `UD.multitokens`.
 
+## References
+- Sebastian Schuster & Christopher D. Manning (2016). Enhanced English Universal Dependencies: An Improved Representation for Natural Language Understanding Tasks.
+- Joakim Nivre et al. (2020). Universal Dependencies v2: An Evergrowing Multilingual Treebank Collection.
+
 ## License
 
 MIT
