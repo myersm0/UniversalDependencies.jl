@@ -23,7 +23,7 @@ function write_multiword(io::IO, mw::MultiwordNode)
 end
 
 function write_empty(io::IO, en::EmptyNode)
-	print(io, en.major, '.', en.minor)
+	print(io, en.id)
 	print(io, '\t', en.form)
 	print(io, '\t', en.lemma)
 	print(io, '\t', en.upos)
@@ -43,12 +43,12 @@ function write_sentence(io::IO, sentence::Sentence)
 	mw_idx = 1
 	em_idx = 1
 	for word in sentence.words
-		while mw_idx <= length(sentence.multiwords) && sentence.multiwords[mw_idx].first == word.id
+		while mw_idx <= length(sentence.multiwords) && sentence.multiwords[mw_idx].first == word.id.major
 			write_multiword(io, sentence.multiwords[mw_idx])
 			mw_idx += 1
 		end
 		write_word(io, word)
-		while em_idx <= length(sentence.empties) && sentence.empties[em_idx].major == word.id
+		while em_idx <= length(sentence.empties) && sentence.empties[em_idx].id.major == word.id.major
 			write_empty(io, sentence.empties[em_idx])
 			em_idx += 1
 		end

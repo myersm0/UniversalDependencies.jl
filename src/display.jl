@@ -98,7 +98,7 @@ function compact(
 		for (c, word) in enumerate(words)
 			c > 1 && print(io, "  ")
 			value = row_values[r][c]
-			highlighted = use_color && word.id in highlight_ids
+			highlighted = use_color && c in highlight_ids
 			if highlighted
 				print(io, "\e[1;33m", rpad(value, col_widths[c]), "\e[0m")
 			else
@@ -154,5 +154,5 @@ function Base.show(io::IO, mw::MultiwordNode)
 end
 
 function Base.show(io::IO, en::EmptyNode)
-	print(io, en.major, '.', en.minor, '\t', en.form, '\t', en.lemma, '\t', en.upos)
+	print(io, en.id, '\t', en.form, '\t', en.lemma, '\t', en.upos)
 end

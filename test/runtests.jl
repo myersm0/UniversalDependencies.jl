@@ -31,33 +31,40 @@ const sample_path = joinpath(@__DIR__, "sample.conllu")
 	@test sprint(show, parse(Features, "B=2|A=1")) == "A=1|B=2"
 end
 
-@testset "DepHead" begin
-	n1 = parse(DepHead, "5")
+@testset "NodeRef" begin
+	n1 = parse(NodeRef, "5")
 	@test n1.major == 5
 	@test n1.minor == 0
 	@test !is_empty_node(n1)
 	@test sprint(show, n1) == "5"
-	n2 = parse(DepHead, "5.1")
+	n2 = parse(NodeRef, "5.1")
 	@test n2.major == 5
 	@test n2.minor == 1
 	@test is_empty_node(n2)
 	@test sprint(show, n2) == "5.1"
 	@test n1 != n2
-	@test parse(DepHead, "5") == parse(DepHead, "5")
+	@test parse(NodeRef, "5") == parse(NodeRef, "5")
+	@test n1 == 5
+	@test 5 == n1
+	@test n1 != 3
+	@test n2 != 5
+	@test NodeRef(3) < NodeRef(5)
+	@test NodeRef(5, 0) < NodeRef(5, 1)
+	@test NodeRef(5, 1) < NodeRef(5, 2)
 end
 
 @testset "EnhancedDeps" begin
 	e = parse(EnhancedDeps, "5:nsubj|8:obj")
 	@test length(e) == 2
-	@test e.deps[1].head == DepHead(5)
+	@test e.deps[1].head == NodeRef(5)
 	@test e.deps[1].deprel == "nsubj"
-	@test e.deps[2].head == DepHead(8)
+	@test e.deps[2].head == NodeRef(8)
 	empty_e = parse(EnhancedDeps, "_")
 	@test isempty(empty_e)
 	@test sprint(show, empty_e) == "_"
 	@test sprint(show, e) == "5:nsubj|8:obj"
 	e2 = parse(EnhancedDeps, "5.1:nsubj|3:obj")
-	@test e2.deps[1].head == DepHead(5, 1)
+	@test e2.deps[1].head == NodeRef(5, 1)
 	@test is_empty_node(e2.deps[1].head)
 	@test sprint(show, e2) == "5.1:nsubj|3:obj"
 end
@@ -65,6 +72,7 @@ end
 @testset "WordNode construction" begin
 	w = WordNode(id = 1, form = "hello")
 	@test w.id == 1
+	@test w.id == NodeRef(1)
 	@test w.form == "hello"
 	@test w.lemma == "_"
 	@test w.upos == "_"
@@ -72,6 +80,9 @@ end
 	@test isempty(w.feats)
 	@test isempty(w.deps)
 	@test isempty(w.misc)
+	w2 = WordNode(id = NodeRef(2), form = "world", head = 1)
+	@test w2.id == 2
+	@test w2.head == 1
 end
 
 @testset "MultiwordNode construction" begin
@@ -82,9 +93,10 @@ end
 end
 
 @testset "EmptyNode construction" begin
-	en = EmptyNode(major = 1, minor = 1, form = "PRO")
-	@test en.major == 1
-	@test en.minor == 1
+	en = EmptyNode(id = NodeRef(1, 1), form = "PRO")
+	@test en.id == NodeRef(1, 1)
+	@test en.id.major == 1
+	@test en.id.minor == 1
 	@test en.lemma == "_"
 end
 

@@ -63,16 +63,24 @@ function Base.parse(::Type{Features}, raw::AbstractString)::Features
 end
 
 
-@kwdef struct DepHead
+@kwdef struct NodeRef
 	major::Int
 	minor::Int = 0
 end
 
-DepHead(major::Int) = DepHead(major, 0)
+NodeRef(major::Int) = NodeRef(major, 0)
 
-is_empty_node(id::DepHead) = id.minor > 0
+Base.convert(::Type{NodeRef}, i::Int) = NodeRef(i, 0)
+Base.:(==)(r::NodeRef, i::Int) = r.major == i && r.minor == 0
+Base.:(==)(i::Int, r::NodeRef) = r == i
 
-function Base.show(io::IO, id::DepHead)
+function Base.isless(a::NodeRef, b::NodeRef)
+	a.major < b.major || (a.major == b.major && a.minor < b.minor)
+end
+
+is_empty_node(id::NodeRef) = id.minor > 0
+
+function Base.show(io::IO, id::NodeRef)
 	if id.minor == 0
 		print(io, id.major)
 	else
@@ -80,25 +88,25 @@ function Base.show(io::IO, id::DepHead)
 	end
 end
 
-function Base.parse(::Type{DepHead}, raw::AbstractString)::DepHead
+function Base.parse(::Type{NodeRef}, raw::AbstractString)::NodeRef
 	if contains(raw, '.')
 		left, right = split(raw, '.'; limit = 2)
-		DepHead(parse(Int, left), parse(Int, right))
+		NodeRef(parse(Int, left), parse(Int, right))
 	else
-		DepHead(parse(Int, raw))
+		NodeRef(parse(Int, raw))
 	end
 end
 
-function Base.:(==)(a::DepHead, b::DepHead)
+function Base.:(==)(a::NodeRef, b::NodeRef)
 	a.major == b.major && a.minor == b.minor
 end
 
-function Base.hash(id::DepHead, h::UInt)
+function Base.hash(id::NodeRef, h::UInt)
 	hash(id.minor, hash(id.major, h))
 end
 
 @kwdef struct EnhancedDep
-	head::DepHead
+	head::NodeRef
 	deprel::String
 end
 
@@ -127,7 +135,7 @@ function Base.parse(::Type{EnhancedDeps}, raw::AbstractString)::EnhancedDeps
 	deps = EnhancedDep[]
 	for item in split(raw, '|')
 		head_str, deprel = split(item, ':'; limit = 2)
-		push!(deps, EnhancedDep(parse(DepHead, head_str), String(deprel)))
+		push!(deps, EnhancedDep(parse(NodeRef, head_str), String(deprel)))
 	end
 	EnhancedDeps(deps)
 end
@@ -135,17 +143,37 @@ end
 
 abstract type AbstractNode end
 
-@kwdef mutable struct WordNode <: AbstractNode
-	id::Int
+mutable struct WordNode <: AbstractNode
+	id::NodeRef
 	form::String
-	lemma::String = "_"
-	upos::String = "_"
-	xpos::String = "_"
-	feats::Features = Features()
-	head::Int = 0
-	deprel::String = "_"
-	deps::EnhancedDeps = EnhancedDeps()
-	misc::Features = Features()
+	lemma::String
+	upos::String
+	xpos::String
+	feats::Features
+	head::NodeRef
+	deprel::String
+	deps::EnhancedDeps
+	misc::Features
+end
+
+function WordNode(;
+	id::Union{Int, NodeRef},
+	form::String,
+	lemma::String = "_",
+	upos::String = "_",
+	xpos::String = "_",
+	feats::Features = Features(),
+	head::Union{Int, NodeRef} = NodeRef(0),
+	deprel::String = "_",
+	deps::EnhancedDeps = EnhancedDeps(),
+	misc::Features = Features(),
+)
+	WordNode(
+		id isa Int ? NodeRef(id) : id,
+		form, lemma, upos, xpos, feats,
+		head isa Int ? NodeRef(head) : head,
+		deprel, deps, misc,
+	)
 end
 
 @kwdef mutable struct MultiwordNode <: AbstractNode
@@ -156,8 +184,7 @@ end
 end
 
 @kwdef mutable struct EmptyNode <: AbstractNode
-	major::Int
-	minor::Int
+	id::NodeRef
 	form::String
 	lemma::String = "_"
 	upos::String = "_"

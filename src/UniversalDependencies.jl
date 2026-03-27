@@ -1,7 +1,7 @@
 module UniversalDependencies
 
 include("types.jl")
-export DepHead, is_empty_node, Features, EnhancedDep, EnhancedDeps
+export NodeRef, is_empty_node, Features, EnhancedDep, EnhancedDeps
 export AbstractNode, WordNode, MultiwordNode, EmptyNode
 export Sentence, Treebank
 

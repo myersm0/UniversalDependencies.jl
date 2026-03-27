@@ -1,12 +1,12 @@
 function parse_word(fields::Vector{<:AbstractString})::WordNode
 	WordNode(
-		id = parse(Int, fields[1]),
+		id = NodeRef(parse(Int, fields[1])),
 		form = String(fields[2]),
 		lemma = String(fields[3]),
 		upos = String(fields[4]),
 		xpos = String(fields[5]),
 		feats = parse(Features, fields[6]),
-		head = fields[7] == "_" ? 0 : parse(Int, fields[7]),
+		head = fields[7] == "_" ? NodeRef(0) : NodeRef(parse(Int, fields[7])),
 		deprel = String(fields[8]),
 		deps = parse(EnhancedDeps, fields[9]),
 		misc = parse(Features, fields[10]),
@@ -24,8 +24,7 @@ end
 
 function parse_empty(fields::Vector{<:AbstractString}, major::Int, minor::Int)::EmptyNode
 	EmptyNode(
-		major = major,
-		minor = minor,
+		id = NodeRef(major, minor),
 		form = String(fields[2]),
 		lemma = String(fields[3]),
 		upos = String(fields[4]),

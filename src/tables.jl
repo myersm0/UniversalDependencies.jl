@@ -32,12 +32,12 @@ function Base.iterate(tr::TreebankRows, state = (1, 1))
 			w = sentence[word_idx]
 			row = (
 				sentence_index = sent_idx,
-				id = w.id,
+				id = w.id.major,
 				form = w.form,
 				lemma = w.lemma,
 				upos = w.upos,
 				xpos = w.xpos,
-				head = w.head,
+				head = w.head.major,
 				deprel = w.deprel,
 			)
 			return (row, (sent_idx, word_idx + 1))

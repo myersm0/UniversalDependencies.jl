@@ -149,7 +149,7 @@ function arc_diagram(
 			c > 1 && print(io, " "^gap)
 			value = getter == :form ? word.form : word.upos
 			padded = rpad(value, col_widths[c])
-			highlighted = use_color && word.id in highlight_ids
+			highlighted = use_color && c in highlight_ids
 			dimmed = use_color && !highlighted && row_idx > 1
 			if highlighted
 				print(io, "\e[1;33m", padded, "\e[0m")

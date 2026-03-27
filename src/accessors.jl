@@ -28,11 +28,13 @@ function root(sentence::Sentence)::WordNode
 	error("no root found in sentence")
 end
 
-function children(sentence::Sentence, id::Int)::Vector{WordNode}
+function children(sentence::Sentence, id::NodeRef)::Vector{WordNode}
 	[w for w in sentence.words if w.head == id]
 end
 
-function subtree(sentence::Sentence, id::Int)::Vector{WordNode}
+children(sentence::Sentence, id::Int) = children(sentence, NodeRef(id))
+
+function subtree(sentence::Sentence, id::NodeRef)::Vector{WordNode}
 	result = WordNode[]
 	stack = [id]
 	while !isempty(stack)
@@ -46,6 +48,8 @@ function subtree(sentence::Sentence, id::Int)::Vector{WordNode}
 	end
 	sort!(result, by = w -> w.id)
 end
+
+subtree(sentence::Sentence, id::Int) = subtree(sentence, NodeRef(id))
 
 function head_of(sentence::Sentence, word::WordNode)::Union{WordNode, Nothing}
 	word.head == 0 && return nothing
