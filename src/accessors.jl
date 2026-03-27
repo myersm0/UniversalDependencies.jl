@@ -8,6 +8,15 @@ function sent_id(sentence::Sentence)
 	nothing
 end
 
+id(node::Node) = node.id
+id(node::EmptyNode) = node.id
+id(sentence::Sentence) = sent_id(sentence)
+
+function id(::MWTNode)
+	@warn "MWTNode does not have a node ID; use .first and .last for its span"
+	nothing
+end
+
 function text(sentence::Sentence)
 	for comment in sentence.comments
 		if startswith(comment, "# text")

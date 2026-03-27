@@ -105,6 +105,7 @@ end
 	@test length(tb) == 4
 	s1 = tb[1]
 	@test UD.sent_id(s1) == "weblog-1"
+	@test UD.id(s1) == "weblog-1"
 	@test UD.text(s1) == "I don't even know what to say about this place."
 	@test length(s1) == 12
 	@test length(UD.multitokens(s1)) == 1
@@ -112,7 +113,9 @@ end
 	@test mw.first == 2
 	@test mw.last == 3
 	@test mw.form == "don't"
+	@test UD.id(mw) === nothing
 	w1 = s1[1]
+	@test UD.id(w1) == 1
 	@test w1.form == "I"
 	@test w1.upos == "PRON"
 	@test w1.head == 5

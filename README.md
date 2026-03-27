@@ -22,7 +22,7 @@ const UD = UniversalDependencies
 treebank = UD.load("en_ewt-ud-train.conllu")
 sentence = treebank[1]
 
-UD.sent_id(sentence)     # "weblog-01"
+UD.id(sentence)          # "weblog-01"
 UD.text(sentence)        # the original text of the sentence
 length(sentence)         # 12 (word count)
 
@@ -138,7 +138,7 @@ Other node types and metadata:
 ```julia
 UD.multitokens(s)    # Vector{MWTNode}
 UD.empties(s)        # Vector{EmptyNode}
-UD.sent_id(s)        # parses # sent_id = ...
+UD.id(s)             # parses # id = ...
 UD.text(s)           # parses # text = ...
 s.comments           # Vector{String}, raw comment lines
 ```
@@ -152,7 +152,7 @@ treebank = UD.load("my_treebank.conllu")
 length(treebank)                              # sentence count
 treebank[1:10]                                # slicing returns a Treebank
 filter(s -> length(s) > 20, treebank)         # long sentences (returns Treebank)
-[UD.sent_id(s) for s in treebank]             # all sentence IDs
+[UD.id(s) for s in treebank]                  # all sentence IDs
 ```
 
 Flat word iteration across sentence boundaries:
