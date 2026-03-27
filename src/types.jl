@@ -143,6 +143,8 @@ end
 
 abstract type AbstractNode end
 
+# String fields default to "_" which means "unspecified" in CoNLL-U,
+# not a literal underscore. This matches the serialization format directly.
 mutable struct Node <: AbstractNode
 	id::NodeRef
 	form::String
