@@ -275,4 +275,95 @@ end
 	@test length(s.names) == 8
 end
 
+@testset "UPOS validation" begin
+	@test UD.is_valid_upos("VERB")
+	@test UD.is_valid_upos("NOUN")
+	@test UD.is_valid_upos("PUNCT")
+	@test !UD.is_valid_upos("verb")
+	@test !UD.is_valid_upos("NP")
+	@test !UD.is_valid_upos("_")
+	@test length(UD.upos_tags) == 17
+end
+
+@testset "deprel validation" begin
+	@test UD.is_valid_deprel("nsubj")
+	@test UD.is_valid_deprel("nsubj:pass")
+	@test UD.is_valid_deprel("obl:agent")
+	@test UD.is_valid_deprel("compound:prt")
+	@test !UD.is_valid_deprel("NSUBJ")
+	@test !UD.is_valid_deprel("dobj")
+	@test !UD.is_valid_deprel("_")
+	@test length(UD.universal_deprels) == 37
+end
+
+@testset "split_deprel" begin
+	@test UD.split_deprel("nsubj") == ("nsubj", nothing)
+	@test UD.split_deprel("nsubj:pass") == ("nsubj", "pass")
+	@test UD.split_deprel("obl:in_front_of") == ("obl", "in_front_of")
+	@test UD.split_deprel("compound:prt") == ("compound", "prt")
+end
+
+@testset "enhanced deprel validation" begin
+	@test UD.is_valid_enhanced_deprel("nsubj")
+	@test UD.is_valid_enhanced_deprel("nsubj:pass")
+	@test UD.is_valid_enhanced_deprel("ref")
+	@test !UD.is_valid_enhanced_deprel("dobj")
+end
+
+@testset "defensive Features parsing" begin
+	empty_str = parse(UD.Features, "")
+	@test isempty(empty_str)
+	whitespace = parse(UD.Features, "  ")
+	@test isempty(whitespace)
+	malformed = @test_logs (:warn, r"malformed feature") parse(UD.Features, "BadValue")
+	@test isempty(malformed)
+	partial = @test_logs (:warn, r"malformed feature") parse(UD.Features, "A=1|Bad|C=3")
+	@test length(partial) == 2
+	@test partial["A"] == "1"
+	@test partial["C"] == "3"
+	trailing_pipe = parse(UD.Features, "A=1|B=2|")
+	@test length(trailing_pipe) == 2
+end
+
+@testset "defensive EnhancedDeps parsing" begin
+	empty_str = parse(UD.EnhancedDeps, "")
+	@test isempty(empty_str)
+	whitespace = parse(UD.EnhancedDeps, "  ")
+	@test isempty(whitespace)
+	malformed = @test_logs (:warn, r"malformed enhanced dep") parse(UD.EnhancedDeps, "garbage")
+	@test isempty(malformed)
+	partial = @test_logs (:warn, r"malformed enhanced dep") parse(UD.EnhancedDeps, "5:nsubj|bad|3:obj")
+	@test length(partial) == 2
+	trailing_pipe = parse(UD.EnhancedDeps, "5:nsubj|3:obj|")
+	@test length(trailing_pipe) == 2
+end
+
+@testset "defensive sentence parsing" begin
+	bad_conllu = """
+# sent_id = bad-test
+# text = Hello.
+1\tHello\thello\tINTJ\tUH\t_\t0\troot\t0:root\t_
+this line has wrong field count
+2\t.\t.\tPUNCT\t.\t_\t1\tpunct\t1:punct\t_
+
+"""
+	tb = @test_logs (:warn, r"expected 10 tab-separated fields") UD.load(IOBuffer(bad_conllu))
+	@test length(tb) == 1
+	s = tb[1]
+	@test length(s) == 2
+	@test s[1].form == "Hello"
+	@test s[2].form == "."
+end
+
+@testset "UPOS warning on parse" begin
+	conllu = """
+# sent_id = upos-warn-test
+1\tHello\thello\tFAKE\tUH\t_\t0\troot\t0:root\t_
+
+"""
+	tb = @test_logs (:warn, r"unrecognized UPOS") UD.load(IOBuffer(conllu))
+	@test length(tb) == 1
+	@test tb[1][1].upos == "FAKE"
+end
+
 end

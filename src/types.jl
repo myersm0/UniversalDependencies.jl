@@ -53,11 +53,17 @@ function Base.show(io::IO, f::Features)
 end
 
 function Base.parse(::Type{Features}, raw::AbstractString)::Features
-	raw == "_" && return Features()
+	(raw == "_" || isempty(strip(raw))) && return Features()
 	pairs = Pair{String, String}[]
 	for item in split(raw, '|')
-		key, value = split(item, '='; limit = 2)
-		push!(pairs, String(key) => String(value))
+		item = strip(item)
+		isempty(item) && continue
+		parts = split(item, '='; limit = 2)
+		if length(parts) == 2
+			push!(pairs, String(parts[1]) => String(parts[2]))
+		else
+			@warn "skipping malformed feature (no '=' found)" item
+		end
 	end
 	Features(pairs)
 end
@@ -131,11 +137,25 @@ function Base.show(io::IO, e::EnhancedDeps)
 end
 
 function Base.parse(::Type{EnhancedDeps}, raw::AbstractString)::EnhancedDeps
-	raw == "_" && return EnhancedDeps()
+	(raw == "_" || isempty(strip(raw))) && return EnhancedDeps()
 	deps = EnhancedDep[]
 	for item in split(raw, '|')
-		head_str, deprel = split(item, ':'; limit = 2)
-		push!(deps, EnhancedDep(parse(NodeRef, head_str), String(deprel)))
+		item = strip(item)
+		isempty(item) && continue
+		parts = split(item, ':'; limit = 2)
+		if length(parts) < 2
+			@warn "skipping malformed enhanced dep (no ':' found)" item
+			continue
+		end
+		head_str = parts[1]
+		deprel = parts[2]
+		head = try
+			parse(NodeRef, head_str)
+		catch e
+			@warn "skipping enhanced dep with unparseable head" item exception = e
+			continue
+		end
+		push!(deps, EnhancedDep(head, String(deprel)))
 	end
 	EnhancedDeps(deps)
 end

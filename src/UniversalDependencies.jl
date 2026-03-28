@@ -3,6 +3,7 @@ module UniversalDependencies
 const UD = UniversalDependencies
 export UD
 
+include("validation.jl")
 include("types.jl")
 include("parse.jl")
 include("write.jl")
